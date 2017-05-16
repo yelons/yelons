@@ -1,125 +1,57 @@
 <?php
-function p($r)
+
+// 新建一个测试输出函数
+function p($arr,$icon=0)
 {
+    header("Content-type: text/html; charset=utf-8");
     echo "<pre>";
-    print_r($r);
+    print_r($arr);
     echo "</pre>";
-}
-
-
-/*
-观察者接口
-*/
-
-interface InterfaceObserver
-{
-    function onListen($sender, $args);
-
-    function getObserverName();
-}
-
-// 可被观察者接口
-interface InterfaceObservable
-{
-    function addObserver($observer);
-
-    function removeObserver($observer_name);
-}
-
-// 观察者抽象类
-abstract class Observer implements InterfaceObserver
-{
-    protected $observer_name;
-
-    function getObserverName()
-    {
-
-
-        return $this->observer_name;
-    }
-
-    function onListen($sender, $args)
-    {
-
+    if ($icon) {
+        exit;
     }
 }
 
-// 可被观察类
-abstract class Observable implements InterfaceObservable
-{
-    protected $observers = array();
 
-    public function addObserver($observer)
-    {
-        if ($observer instanceof InterfaceObserver) {
-            $this->observers[] = $observer;
+function get_rand($proArr) {
+    $result = '';
+    //概率数组的总概率精度
+    $proSum = array_sum($proArr);p($proSum);
+    //概率数组循环
+    foreach ($proArr as $key => $proCur) {
+        $randNum = mt_rand(1, $proSum);
+        if ($randNum <= $proCur) {
+            $result = $key;
+            break;
+        } else {
+            $proSum -= $proCur;
         }
     }
-
-    public function removeObserver($observer_name)
-    {
-        foreach ($this->observers as $index => $observer) {
-            if ($observer->getObserverName() === $observer_name) {
-                array_splice($this->observers, $index, 1);
-                return;
-            }
-        }
-    }
+    unset ($proArr);
+    return $result;
 }
 
-// 模拟一个可以被观察的类
-class A extends Observable
-{
-    public function addListener($listener)
-    {
-        foreach ($this->observers as $observer) {
-            $observer->onListen($this, $listener);
-        }
-    }
+$prize_arr = array(
+    '0' => array('id'=>1,'prize'=>'平板电脑','v'=>1),
+    '1' => array('id'=>2,'prize'=>'数码相机','v'=>5),
+    '2' => array('id'=>3,'prize'=>'音箱设备','v'=>10),
+    '3' => array('id'=>4,'prize'=>'4G优盘','v'=>12),
+    '4' => array('id'=>5,'prize'=>'10Q币','v'=>22),
+    '5' => array('id'=>6,'prize'=>'下次没准就能中哦','v'=>50),
+);
+
+foreach ($prize_arr as $key => $val) {
+    $arr[$val['id']] = $val['v'];
 }
+$rid = get_rand($arr); //根据概率获取奖项id
 
-// 模拟一个观察者类
-class B extends Observer
-{
-    protected $observer_name = 'B';
-
-    public function onListen($sender, $args)
-    {
-        p($sender);
-        echo "<br>";
-        p($args);
-        echo "<br>";
-    }
+$res['yes'] = $prize_arr[$rid-1]['prize']; //中奖项
+unset($prize_arr[$rid-1]); //将中奖项从数组中剔除，剩下未中奖项
+shuffle($prize_arr); //打乱数组顺序
+for($i=0;$i<count($prize_arr);$i++){
+    $pr[] = $prize_arr[$i]['prize'];
 }
+$res['no'] = $pr;
+$resjson = json_encode($res);
 
-// 模拟另外一个观察者类
-class C extends Observer
-{
-    protected $observer_name = 'C';
-
-    public function onListen($sender, $args)
-    {
-        p($sender);
-        echo "<br>";
-        p($args);
-        echo "<br>";
-    }
-}
-
-// 实例化一个被观察者
-$a = new A();
-
-// 注入观察者
-$a->addObserver(new B());
-$a->addObserver(new C());
-
-//// 可以看到观察到的信息
-$a->addListener('D');
-//// 移除观察者
-$a->removeObserver('B');
-
-// 打印的信息：
-// object(A)#1 (1) { ["observers":protected]=> array(2) { [0]=> object(B)#2 (1) { ["observer_name":protected]=> string(1) "B" } [1]=> object(C)#3 (1) { ["observer_name":protected]=> string(1) "C" } } }
-// string(1) "D"
-// object(A)#1 (1) { ["observers":protected]=> array(2) { [0]=> object(B)#2 (1) { ["observer_name":protected]=> string(1) "B" } [1]=> object(C)#3 (1) { ["observer_name":protected]=> string(1) "C" } } }
-// string(1) "D"
+p(json_decode($resjson));
