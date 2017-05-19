@@ -12,6 +12,15 @@ function p($arr,$icon=0)
     }
 }
 
+function pp($arr,$icon=0)
+{
+    header("Content-type: text/html; charset=utf-8");
+    echo "<pre>";
+    print_r($arr);
+    echo "</pre>";
+        exit;
+}
+
 
 function get_rand($proArr) {
     $result = '';
